@@ -3,6 +3,8 @@ __author__ = 'Carlobo'
 
 from bs4 import BeautifulSoup
 import requests
+import os
+
 
 URL_prueba ="https://web.archive.org/web/20141015154755/http://www.royalroadl.com:80/legendary-moonlight-sculptor-volume-2/"
 
