@@ -5,14 +5,13 @@ from bs4 import BeautifulSoup
 import requests, os, re
 
 link_chapters = []
-link_volumes = []
-volume_names = []
-URL = "https://lightnovelstranslations.com/re-master-magic/"
+link_subchapters = []
+URL = "http://www.radianttranslations.com/bing-huo-mo-chu/"
 
 if not os.path.exists("Chapters"):
     os.makedirs("Chapters")
-if not os.path.exists("Volumes"):
-    os.makedirs("Volumes")
+#if not os.path.exists("Volumes"):
+#    os.makedirs("Volumes")
 # Realizamos la petición a la web
 req = requests.get(URL)
 
@@ -24,22 +23,20 @@ if status_code == 200:
     html = BeautifulSoup(req.text, "html5lib")
 
     # Obtenemos todos los divs donde están las entradas
-    volumes = html.find_all('div', {'class': re.compile("su-spoiler su-spoiler-style-default su-spoiler-icon-plus*")})
-    for i,volume in enumerate(volumes):
-        volume_name = volume.find('div', {'class': 'su-spoiler-title'}).getText()
-        chapters = volume.find('div', {'class': 'su-spoiler-content su-clearfix'})
-        links = chapters.find_all('a')
+    content = html.find('div', {'class': 'entry-content content'})
+    table = content.find('table')
+    chapters = table.find_all('tr')
+    for i,chapter in enumerate(chapters):
+        links = chapter.find_all('a')
         for j,link in enumerate(links):
-            link_chapters.append(link.get('href'))
-        link_volumes.append(link_chapters)
-        volume_names.append(volume_name)
-        link_chapters = []
+            link_subchapters.append(link.get('href'))
+        link_chapters.append(link_subchapters)
+        link_subchapters = []
 
 else:
     print "Status Code %d" % status_code
-
-for i,links in enumerate(link_volumes):
-    fileVolu = open("Volumes/"+volume_names[i], 'w');
+for i,links in enumerate(link_chapters):
+    file = open("Chapters/Chapter "+'{:03d}'.format(i+1), 'w');
     for j,link in enumerate(links):
         URL = link
         req = requests.get(URL)
@@ -47,17 +44,13 @@ for i,links in enumerate(link_volumes):
         if status_code == 200:
             html = BeautifulSoup(req.text, "html5lib")
             title = html.find('h1', {'class': 'entry-title'}).getText().encode("utf-8")
-            file = open("Chapters/"+title, 'w');
-            file.write(title+"\n"+"\n")
-            fileVolu.write(title+"\n"+"\n")
-            chapter = html.find('div', {'class': 'entry-content'})
+            file.write("\n"+"\n"+title+"\n"+"\n")
+            chapter = html.find('div', {'class': 'entry-content content'})
             #file.write(chapter.getText().encode("utf-8")+"\n")
             #fileVolu.write(chapter.getText().encode("utf-8")+"\n")
             ps = chapter.find_all(["p","h1", "h2", "h3", "h4", "h5", "h6"])
             for p in enumerate(ps):
                 file.write(p[1].getText().encode("utf-8")+"\n")
-                fileVolu.write(p[1].getText().encode("utf-8")+"\n")
-            file.close()
         else:
             print "Status Code %d" % status_code
-    fileVolu.close()
+    file.close()
